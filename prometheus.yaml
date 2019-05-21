@@ -1,0 +1,63 @@
+---
+apiVersion: flux.weave.works/v1beta1
+kind: HelmRelease
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  releaseName: prometheus
+  chart:
+    repository: https://kubernetes-charts.storage.googleapis.com
+    name: prometheus
+    version: 8.4.3
+    #version: 8.8.0
+  values:
+    alertmanager:
+      enabled: false
+    server:
+      global:
+        scrape_interval: 15s
+        scrape_timeout: 10s
+      persistentVolume:
+        enabled: false
+    serverFiles:
+      prometheus.yml:
+        rule_files:
+          - /etc/config/rules
+          - /etc/config/alerts
+        scrape_configs:
+          - job_name: prometheus
+            static_configs:
+              - targets:
+                - localhost:9090
+    extraScrapeConfigs: |-
+      - job_name: 'node'
+        metrics_path: "/metrics"
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        tls_config:
+          insecure_skip_verify: true
+        ec2_sd_configs:
+          - region: us-west-2
+            port: 9100
+        relabel_configs:
+          - source_labels: [__meta_ec2_tag_platform]
+            regex: windows
+            action: drop
+          - source_labels: [__meta_ec2_tag_prometheus]
+            regex: disable
+            action: drop
+          - source_labels: [__meta_ec2_instance_state]
+            regex: running
+            action: keep
+          - source_labels: [__meta_ec2_tag_Name]
+            target_label: instance
+          - source_labels: [__meta_ec2_instance_id]
+            target_label: instance_id
+          - source_labels: [__meta_ec2_tag_role]
+            target_label: role
+          - source_labels: [__meta_ec2_tag_cost_center]
+            target_label: cost_center
+
