@@ -1,6 +1,6 @@
 ---
-#apiVersion: flux.weave.works/v1beta1
-apiVersion: v1
+apiVersion: flux.weave.works/v1beta1
+#apiVersion: v1
 kind: HelmRelease
 metadata:
   name: prometheus
