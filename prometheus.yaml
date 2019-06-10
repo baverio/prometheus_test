@@ -61,3 +61,34 @@ spec:
             target_label: role
           - source_labels: [__meta_ec2_tag_cost_center]
             target_label: cost_center
+      - job_name: 'node-radiant'
+        metrics_path: "/metrics"
+        scrape_interval: 15s
+        scrape_timeout: 10s
+        tls_config:
+          insecure_skip_verify: true
+        ec2_sd_configs:
+          - region: us-west-2
+            port: 9105
+        relabel_configs:
+          - source_labels: [__meta_ec2_tag_role]
+            regex: radiant
+            action: keep
+          - source_labels: [__meta_ec2_tag_platform]
+            regex: windows
+            action: drop
+          - source_labels: [__meta_ec2_tag_prometheus]
+            regex: disable
+            action: drop
+          - source_labels: [__meta_ec2_instance_state]
+            regex: running
+            action: keep
+          - source_labels: [__meta_ec2_tag_Name]
+            target_label: instance
+          - source_labels: [__meta_ec2_instance_id]
+            target_label: instance_id
+          - source_labels: [__meta_ec2_tag_role]
+            target_label: role
+          - source_labels: [__meta_ec2_tag_cost_center]
+            target_label: cost_center
+
